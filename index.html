@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+    <meta charset="UTF-8">
+    <title>מחשבון תשואה על השקעה</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #1e40af;
+            --background-color: #f0f9ff;
+            --card-background: #ffffff;
+            --text-color: #1f2937;
+            --border-radius: 12px;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .header {
+            background-color: var(--card-background);
+            padding: 1rem;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .logo {
+            width: 60px;
+            height: 60px;
+            margin-bottom: 1rem;
+        }
+
+        .logo-svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 20px 40px;
+        }
+
+        .calculator-card {
+            background-color: var(--card-background);
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            font-size: 2rem;
+            margin: 0;
+            padding: 1rem 0;
+        }
+
+        .input-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(250px, 400px));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            justify-content: center;
+        }
+
+        .input-group {
+            margin-bottom: 0;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-color);
+        }
+
+        input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .button-container {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1.1rem;
+            font-weight: 600;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .result {
+            margin-top: 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            scroll-margin-top: 20px;
+        }
+
+        .result-item {
+            background-color: #f8fafc;
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .result-item strong {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--primary-color);
+        }
+
+        .chart-container {
+            background-color: var(--card-background);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            scroll-margin-top: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 15px 30px;
+            }
+            
+            .calculator-card {
+                padding: 1.5rem;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .input-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            <svg class="logo-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="50" cy="50" r="45" fill="#2563eb" opacity="0.1"/>
+                <path d="M50 20v60M20 50h60" stroke="#2563eb" stroke-width="8" stroke-linecap="round"/>
+                <circle cx="50" cy="50" r="35" fill="none" stroke="#2563eb" stroke-width="4"/>
+                <path d="M50 30l20 20-20 20" fill="none" stroke="#2563eb" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </div>
+        <h1>מחשבון תשואה על השקעה</h1>
+    </div>
+
+    <div class="container">
+        <div class="calculator-card">
+            <div class="input-grid">
+                <div class="input-group">
+                    <label for="initialDeposit">סכום הפקדה חד פעמית בהתחלה (₪):</label>
+                    <input type="number" id="initialDeposit" min="0" value="0" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="monthlyDeposit">סכום הפקדה חודשי (₪):</label>
+                    <input type="number" id="monthlyDeposit" min="0" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="years">מספר שנות השקעה:</label>
+                    <input type="number" id="years" min="1" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="expectedReturn">אחוז תשואה שנתית צפויה (%):</label>
+                    <input type="number" id="expectedReturn" step="0.1" required>
+                </div>
+            </div>
+
+            <div class="button-container">
+                <button onclick="calculateInvestment()">חשב תשואה</button>
+            </div>
+
+            <div id="results" class="result" style="display: none;">
+                <div class="result-item">
+                    <strong>סך הפקדות + תשואה:</strong>
+                    <div id="totalWithReturns"></div>
+                </div>
+                <div class="result-item">
+                    <strong>סך הפקדות ללא תשואה:</strong>
+                    <div id="totalDeposits"></div>
+                </div>
+                <div class="result-item">
+                    <strong>סך הכל אחרי מס:</strong>
+                    <div id="totalAfterTax"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="chartSection" class="chart-container">
+            <canvas id="investmentChart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        let chart = null;
+
+        function calculateInvestment() {
+            const initialDeposit = parseFloat(document.getElementById('initialDeposit').value) || 0;
+            const monthlyDeposit = parseFloat(document.getElementById('monthlyDeposit').value);
+            const years = parseInt(document.getElementById('years').value);
+            const annualReturn = parseFloat(document.getElementById('expectedReturn').value) / 100;
+            
+            if (!monthlyDeposit || !years || isNaN(annualReturn)) {
+                alert('נא למלא את כל השדות בערכים תקינים');
+                return;
+            }
+
+            const monthlyRate = annualReturn / 12;
+            const months = years * 12;
+            
+            const labels = [];
+            const totalValues = [];
+            const depositValues = [];
+            const afterTaxValues = [];
+
+            let currentTotal = initialDeposit;
+            let totalDeposits = initialDeposit;
+            
+            for (let i = 0; i <= months; i++) {
+                if (i % 12 === 0) {
+                    labels.push(`שנה ${i/12}`);
+                    totalValues.push(currentTotal);
+                    depositValues.push(totalDeposits);
+                    
+                    const profit = currentTotal - totalDeposits;
+                    const profitAfterTax = profit * 0.75;
+                    afterTaxValues.push(totalDeposits + profitAfterTax);
+                }
+
+                if (i < months) {
+                    currentTotal = (currentTotal + monthlyDeposit) * (1 + monthlyRate);
+                    totalDeposits += monthlyDeposit;
+                }
+            }
+
+            document.getElementById('results').style.display = 'grid';
+            document.getElementById('totalWithReturns').textContent = formatCurrency(currentTotal);
+            document.getElementById('totalDeposits').textContent = formatCurrency(totalDeposits);
+            
+            const finalProfit = currentTotal - totalDeposits;
+            const finalProfitAfterTax = finalProfit * 0.75;
+            const totalAfterTax = totalDeposits + finalProfitAfterTax;
+            
+            document.getElementById('totalAfterTax').textContent = formatCurrency(totalAfterTax);
+
+            updateChart(labels, totalValues, depositValues, afterTaxValues);
+
+            // גלילה חלקה לתוצאות
+            setTimeout(() => {
+                document.getElementById('results').scrollIntoView({ 
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }, 100);
+        }
+
+        function updateChart(labels, totalValues, depositValues, afterTaxValues) {
+            if (chart) {
+                chart.destroy();
+            }
+
+            const ctx = document.getElementById('investmentChart').getContext('2d');
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'סך הכל כולל תשואה',
+                        data: totalValues,
+                        borderColor: '#2563eb',
+                        backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }, {
+                        label: 'סך הפקדות',
+                        data: depositValues,
+                        borderColor: '#64748b',
+                        borderWidth: 2,
+                        tension: 0.4
+                    }, {
+                        label: 'אחרי מס',
+                        data: afterTaxValues,
+                        borderColor: '#7c3aed',
+                        borderWidth: 2,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'התפתחות ההשקעה לאורך זמן',
+                            font: {
+                                size: 16,
+                                weight: 'bold'
+                            },
+                            padding: 20
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + formatCurrency(context.parsed.y);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return formatCurrency(value);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function formatCurrency(number) {
+            return new Intl.NumberFormat('he-IL', {
+                style: 'currency',
+                currency: 'ILS',
+                maximumFractionDigits: 0
+            }).format(number);
+        }
+    </script>
+</body>
+</html>
